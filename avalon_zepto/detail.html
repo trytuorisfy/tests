@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=0.5, maximum-scale=0.5, user-scalable=no">
+	<title>vShare</title>
+	<link rel="stylesheet" href="css/base.css">
+	<link rel="stylesheet" href="css/detail.css">
+	<script src="js/avalon.mobile.min.js"></script>	  
+	<script src="js/zepto.min.js"></script>
+</head>
+<body>
+	<div class="wrap" ms-controller="share">
+		<div class="det-top ovh  bbgrey pb30">
+			<div class="l-pic fl mr20 rel">
+				<img src="images/micon.png">
+				<span class="mask"></span>
+			</div>
+			<div class="r-txt fl pt10">
+				<h1 class='f36'>{{share.title}}</h1>
+				<div class='f24 c90 lhp150'>
+					<p>大小：{{share.size}}</p>
+					<p>版本：{{share.version}}</p>
+					<p><span class='c2e'>(使用vShare免费下载)</span></p>
+				</div>
+			</div>
+		</div>
+		<div class="dep-mid bbgrey pb30 ">
+			<h3 class='f30'>描述</h3>
+			<div class='f24 c78 p1040 rel ' id='des-div' >
+				<p id='des-p' class='mb10 h110'>{{share.des}}
+					<div class='angle an-down'></div>
+					<div class='angle an-up'></div>
+				</p>
+			</div>
+			<div class="pics rel">
+				<ul id='p-ul'>
+					{{share.imgs|html}}
+
+				</ul>
+				
+			</div>
+		</div>
+		<div class="det-bot">	    
+			<h3 class='f30'>详情</h3>
+			<div class='f24 c78 p1040'>
+				<p>类别：{{share.cate}}</p>
+				<p>更新日期: {{share.update}}</p>
+				<p>版本: {{share.version}}</p>
+				<p>大小：{{share.size}}</p>
+				<p>语言: {{share.lang}}</p>
+				<p>开发商: {{share.developer}}</p>
+			</div>
+		</div>
+
+	</div>
+	<div class="down">
+		<div class="down-btns lh24 ovh auto">
+			<a class="btn btn1 bgc94 f30" href="#">下载</br><span class='f16'>(app store)</span></a>
+			<a class="btn btn2 bgc00b f30" href="#">免费下载</br><span class='f16'>(vShare)</span></a>
+		</div>
+	</div>	
+	<div class="tips">
+	</div>	
+	<div class="shadow"></div>
+	 
+
+	
+
+<script>
+avalon.ready(function(){
+	/*数据原始
+	var share =	avalon.define("share", function(vm){
+					vm.share = {title: "Polar Bowler",
+								size: "123MB",
+								version: "1.0.3",
+								des: "Piling up the booty is as simple as stealing candy from a land-lubber. Simply swipe, swipe, swipe, swipe, swipe…and gold will slingshot into...as simple as stealing candy from a land-lubber. Simply swipe, swipe, swipe, swipe, swipe…and gold will slingshot into...",
+								imgs: "<li><img src='images/11.jpg'></li>" +
+								"<li><img src='images/12.jpg'>" +
+								"<li><img src='images/13.jpg'></li>" +
+								"<li><img src='images/14.jpg'></li>"
+							}
+				})
+	*/
+	/*ajax数据*/
+	var share =	avalon.define("share", function(vm){
+		vm.share = {};
+	});
+	require(["./mmRequest"], function(vm) {
+
+	/*方法一 可行
+		vm.ajax({
+			url: 'data.json',
+			type: 'GET',
+			data:{}, 
+			dataType: 'json',
+			timeout: 30000,
+			error: function(){
+				var message = '请求超时，请“按刷新按钮”';
+				show_msg(message);
+				return false;
+			},
+			success: function(data) {
+				alert(share);
+				share.share = data;
+			}
+		});	
+	*/
+	 	vm.getJSON('data.json',function(data){
+			share.share = data;
+			
+
+		});
+	});
+	avalon.scan();
+	zepto_start();  //zepto相关函数开始
+})
+
+function zepto_start(){
+	var img_finish =setInterval(img_load,500);//幻灯片的第一张图片拿到后，再进行幻灯函数相关加载(实际上是和zepto相关的再开始运行)
+	function img_load(){
+		var f_img = $('#p-ul').find('li').eq(0).find('img');
+		if(f_img.length = 1){
+			// alert(1);
+			clearInterval(img_finish);
+			zepto_need();
+		}else{
+			console.log('没拿到第一张图 Oh no');
+		}
+	}		
+}
+	
+function zepto_need(){
+	// alert($('body').length)
+
+	des_p();
+	pic_slide();
+	$('.shadow').height(1300)
+
+    $('.shadow').tap(function(){
+    	$(this).hide();
+    	$('.tips').hide();
+    });
+
+
+    $('.btn2').on('click',function(){
+    	$('.tips').show();
+		$('.shadow').show();
+    });
+}
+function des_p(){
+	var i = 1;
+	$('#des-div').singleTap(function(){  //使用tap，浏览器认为点击了2次
+		i++;
+		// console.log(i)
+		if(i % 2 == 0){
+        	$('#des-p').removeClass('h110').addClass('hauto');
+        	$('.an-down').hide();
+        	$('.an-up').show();	        			
+		}else{
+        	$('#des-p').removeClass('hauto').addClass('h110');
+        	$('.an-up').hide();
+        	$('.an-down').show();	        			
+		}
+	})
+}
+function pic_slide(){
+	var p_ul = $('#p-ul');
+	var ul_img = $('#p-ul').find('img');
+	var f_img = p_ul.find('li').eq(0).find('img');
+	var img_width = f_img.width();
+	var img_height = f_img.height();
+	if(img_width < img_height){
+		$('.pics').addClass('vert');
+	}	        	
+    $('#p-ul').swipeLeft(function(){		        	
+    	var img_length = ul_img.length;	        	
+    	var img_width = ul_img.width()+10;//10为margin-right的值
+    	var fin_left = -img_width*(img_length-1);
+    	var now_left = parseInt($(this).css('left'));
+    	var new_left = now_left-img_width;     	
+    	if(new_left > fin_left){
+    		$(this).animate({left:new_left},400,'linear');
+    	}else{
+    		$(this).animate({left:fin_left},400,'linear');
+    	}	        		        	
+    });
+    $('#p-ul').swipeRight(function(){
+    	var img_length = ul_img.length;	        	
+    	var img_width = ul_img.width()+10;//10为margin-right的值
+    	var fin_left = 0;
+    	var now_left = parseInt($(this).css('left'));
+    	var new_left = now_left+img_width;	        	
+    	if(new_left < fin_left){
+    		$(this).animate({left:new_left},400,'linear');
+    	}else{
+    		$(this).animate({left:fin_left},400,'linear');
+    	}	        		        	
+    });	        	
+}	
+
+
+
+
+</script>
+	
+
+</body>
+
+</html>
